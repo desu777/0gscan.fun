@@ -148,7 +148,7 @@ router.get('/export/csv', (req: Request, res: Response) => {
       sum + parseFloat(w.phase1_amount || '0') / 1e18, 0
     );
     const totalPhase2 = wallets.reduce((sum, w) =>
-      sum + w.phase2_amount, 0
+      sum + (w.phase2_amount || 0), 0
     );
     const grandTotal = totalPhase1 + totalPhase2;
     const totalPercent = (grandTotal / TOTAL_SUPPLY * 100).toFixed(6);

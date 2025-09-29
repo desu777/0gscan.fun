@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ExternalLink, Download, Search, ChevronLeft, ChevronRight, Copy, Check } from 'lucide-react';
 import { apiService, Wallet } from '../../services/api';
 import { useQuery } from '@tanstack/react-query';
@@ -12,7 +12,7 @@ export default function WalletTable() {
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
   // Fetch wallets data
-  const { data, isLoading: loading, error } = useQuery({
+  const { data, isLoading: loading } = useQuery({
     queryKey: ['wallets', currentPage, rowsPerPage, searchTerm],
     queryFn: () => apiService.getWallets(rowsPerPage, (currentPage - 1) * rowsPerPage, searchTerm),
   });
@@ -178,7 +178,7 @@ export default function WalletTable() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {sortedWallets.map((wallet, index) => {
+              {sortedWallets.map((wallet) => {
                 const phase1Amount = parseFloat(wallet.phase1_amount || '0') / 1e18;
                 const phase2Amount = wallet.phase2_amount || 0;
                 const totalAmount = calculateTotal(wallet);
@@ -238,7 +238,7 @@ export default function WalletTable() {
 
         {/* Mobile Cards */}
         <div className="md:hidden">
-          {sortedWallets.map((wallet, index) => {
+          {sortedWallets.map((wallet) => {
             const phase1Amount = parseFloat(wallet.phase1_amount || '0') / 1e18;
             const phase2Amount = wallet.phase2_amount || 0;
             const totalAmount = calculateTotal(wallet);

@@ -144,7 +144,7 @@ async function migrateData() {
         COUNT(DISTINCT CASE WHEN phase2_amount > 0 THEN address END) as phase2_wallets,
         COUNT(DISTINCT CASE WHEN phase1_amount != '0' AND phase2_amount > 0 THEN address END) as overlapping
       FROM wallets
-    `).get();
+    `).get() as { total_wallets: number; phase1_wallets: number; phase2_wallets: number; overlapping: number };
 
     console.log('\n📊 Migration Summary:');
     console.log(`Total unique wallets: ${stats.total_wallets}`);

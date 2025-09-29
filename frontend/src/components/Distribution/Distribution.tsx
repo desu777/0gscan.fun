@@ -1,5 +1,5 @@
 import { useStats, useScannerStatus } from '../../hooks/useStats';
-import { getRelativeTime, formatDateTime, getTimeSinceTGE } from '../../utils/timeHelpers';
+import { getRelativeTime, getTimeSinceTGE } from '../../utils/timeHelpers';
 
 export default function Distribution() {
   const { stats, loading } = useStats();

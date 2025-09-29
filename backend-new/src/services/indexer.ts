@@ -1,8 +1,8 @@
 import { Server } from 'socket.io';
-import { formatUnits } from 'viem';
+import { formatUnits, decodeEventLog } from 'viem';
 import { blockchainService } from './blockchain';
 import { dbService } from './database';
-import { CONTRACTS } from '../config/blockchain';
+import { CONTRACTS, ERC20_ABI } from '../config/blockchain';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -80,7 +80,17 @@ export class AirdropIndexer {
     let newClaims = 0;
 
     for (const transfer of w0gTransfers) {
-      const args = transfer.args as { from: string; to: string; value: bigint };
+      // Skip if no transaction hash or block number
+      if (!transfer.transactionHash || !transfer.blockNumber) continue;
+
+      // Decode the Transfer event
+      const decoded = decodeEventLog({
+        abi: ERC20_ABI,
+        data: transfer.data,
+        topics: transfer.topics
+      }) as { eventName: string; args: { from: string; to: string; value: bigint } };
+
+      const args = decoded.args;
 
       const relatedTx = airdropTxs.find(tx => tx.hash === transfer.transactionHash);
       if (!relatedTx) continue;
