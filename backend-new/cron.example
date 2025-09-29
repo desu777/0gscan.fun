@@ -1,0 +1,31 @@
+# 0G Airdrop Scanner - Cron Configuration Example
+#
+# Add this to your crontab using: crontab -e
+#
+# This configuration runs the scanner every 5 hours
+# Adjust the path to your project directory
+
+# Run scanner every 5 hours
+0 */5 * * * cd /mnt/c/Users/kubas/Desktop/0g-transparency/backend-new && npm run scanner >> /dev/null 2>&1
+
+# Alternative schedules:
+# Every 3 hours:     0 */3 * * *
+# Every 6 hours:     0 */6 * * *
+# Every 12 hours:    0 */12 * * *
+# Once daily at 2am: 0 2 * * *
+# Twice daily:       0 2,14 * * *
+
+# For testing (every 5 minutes):
+# */5 * * * * cd /mnt/c/Users/kubas/Desktop/0g-transparency/backend-new && npm run scanner
+
+# View logs:
+# Scanner logs are saved in: backend-new/logs/scanner-YYYY-MM-DD.log
+
+# Windows Task Scheduler alternative:
+# 1. Open Task Scheduler
+# 2. Create Basic Task
+# 3. Set trigger to "Daily" and repeat every 5 hours
+# 4. Action: Start a program
+# 5. Program: npm
+# 6. Arguments: run scanner
+# 7. Start in: C:\Users\kubas\Desktop\0g-transparency\backend-new
