@@ -1,23 +1,35 @@
-# 0G Airdrop Transparency Report
+# 0G Airdrop Distribution Tracker
 
-Independent on-chain verification of 0G Labs token distribution. This project exposes the reality behind their airdrop promises.
+Independent on-chain verification and monitoring platform for 0G Labs token distribution.
 
-## The Fraud Exposed
+## Overview
 
-**Promised at TGE:** 26,000,000 0G (2.6% of total supply)
-**Actually Delivered:** 6,590,871 0G (0.659% of total supply)
-**Missing:** 19,409,129 0G (74.65% not delivered)
+This application provides transparent, real-time tracking of the 0G token airdrop distribution. All data is sourced directly from the blockchain and can be independently verified.
 
-They delivered only **25.35%** of what they promised at TGE.
+### What This Application Shows
+
+- **Distribution Progress:** Real-time percentage of tokens distributed vs. announced
+- **Recipient Statistics:** Complete list of all wallets that received airdrops
+- **Phase Breakdown:** Separate tracking for community (W0G) and node operator distributions
+- **Live Monitoring:** Automatic blockchain scanning for new claims every 5 hours
+- **Verifiable Data:** Direct links to blockchain explorer for all transactions
+
+### Distribution Status (as of September 29, 2024)
+
+- **Announced at TGE:** 26,000,000 0G (2.6% of total supply)
+- **Currently Distributed:** Dynamic calculation based on blockchain data
+- **Total Recipients:** 21,234 unique wallets
+- **Contract Status:** Active and monitored automatically
 
 ## Project Structure
 
 ```
 0g-transparency/
-├── backend/           # Express API server
-├── frontend/          # React + Vite frontend
-├── phase1.db          # Community airdrop data (4,542 wallets)
-├── phase2.db          # Node operators data (16,881 wallets)
+├── backend-new/       # Express API server with blockchain scanner
+├── frontend/          # React + Vite frontend application
+├── data/              # SQLite databases with airdrop data
+│   ├── phase1.db      # Community airdrop data
+│   └── phase2.db      # Node operators data
 └── README.md
 ```
 
@@ -36,79 +48,109 @@ They delivered only **25.35%** of what they promised at TGE.
 - **Block Range:** 0 to 6,892,682
 - **Results:** 16,881 transactions, 1,070,188 0G distributed
 
-### Scan Information
-- **Date:** September 29, 2025 10:36 UTC
-- **Contract Status:** Still ACTIVE (Day 5 since TGE)
-- **Total Recipients:** 21,234 unique wallets
-- **Overlapping Recipients:** 189 wallets received both phases
+### Data Collection Information
+- **Initial Scan Date:** September 29, 2024
+- **Scanner Frequency:** Every 5 hours (automated)
+- **Total Recipients Tracked:** 21,234 unique wallets
+- **Overlapping Recipients:** 189 wallets (received from both phases)
+- **Test Wallet Excluded:** 0x2af0...e42a (3.17M W0G test transaction)
 
 ## Quick Start
 
-### 1. Backend (Port 3001)
+### Prerequisites
+- Node.js 18+
+- npm or yarn
 
+### Installation
+
+1. **Clone the repository**
 ```bash
-cd backend
+git clone https://github.com/desu777/onchain-scanner.git
+cd onchain-scanner
+```
+
+2. **Start Backend (Port 3001)**
+```bash
+cd backend-new
 npm install
 npm run dev
 ```
 
-### 2. Frontend (Port 5173)
-
+3. **Start Frontend (Port 5173)**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-### 3. Access the transparency report
-
+4. **Access the application**
 Open http://localhost:5173 in your browser.
+
+### Blockchain Scanner
+
+The scanner monitors the blockchain for new claims:
+```bash
+cd backend-new
+npm run scanner  # Run manually
+```
+
+Or set up automated scanning every 5 hours using cron (see `backend-new/cron.example`).
 
 ## Features
 
-- **Real-time Data:** Direct access to both phase databases
-- **Interactive Tables:** Search and filter 21,234 recipients
-- **Export Functionality:** Download complete CSV dataset
-- **Blockchain Verification:** Direct links to block explorer
-- **Responsive Design:** Works on all devices
-- **PixelBlast Background:** Interactive animated background
+- **Real-time Monitoring:** Blockchain scanner updates data every 5 hours
+- **Comprehensive Database:** 21,234 unique wallet addresses tracked
+- **Live Statistics:** Dynamic calculation of distribution progress
+- **Blockchain Verification:** All data verifiable via 0G Chain Explorer
+- **WebSocket Updates:** Real-time updates when new claims are detected
+- **Export Functionality:** Download complete dataset as CSV
+- **Responsive Design:** Optimized for desktop and mobile devices
 
 ## API Endpoints
 
-- `GET /api/stats` - Main fraud statistics
+### Data Retrieval
+- `GET /api/stats` - Global distribution statistics
 - `GET /api/wallets` - Paginated wallet list with search
 - `GET /api/wallet/:address` - Individual wallet details
-- `GET /api/top-wallets` - Top 100 recipients
+- `GET /api/top-wallets` - Top recipients by amount
 - `GET /api/export/csv` - Export all data as CSV
-- `GET /api/methodology` - Scanning methodology
+
+### Scanner Control
+- `GET /api/scanner/status` - Current scanner status
+- `POST /api/scanner/run` - Manually trigger blockchain scan
+- `GET /api/scanner/last-run` - Last scan information
+
+### Information
+- `GET /api/methodology` - Data collection methodology
 
 ## Tech Stack
 
 ### Backend
-- Express.js + TypeScript
-- Better-SQLite3 for database access
-- CORS enabled for frontend
+- **Express.js + TypeScript** - API server
+- **Better-SQLite3** - High-performance database access
+- **Viem** - Ethereum library for blockchain interaction
+- **Socket.io** - Real-time WebSocket communication
+- **Node.js 18+** - Runtime environment
 
 ### Frontend
-- React 18 + TypeScript
-- Vite for build tooling
-- TailwindCSS for styling
-- Chart.js for visualizations
-- Three.js for PixelBlast effect
-- React Query for data fetching
-- Lucide React for icons
+- **React 18 + TypeScript** - UI framework
+- **Vite** - Fast build tooling
+- **TailwindCSS** - Utility-first CSS framework
+- **OGL** - WebGL library for Galaxy background effect
+- **@tanstack/react-query** - Data fetching and caching
+- **Lucide React** - Icon library
+- **Socket.io-client** - Real-time updates
 
 ## Database Schema
 
-### Phase 1 (phase1.db)
-- `claims` - Individual wallet claims
-- `transactions` - Transaction details
-- `scan_progress` - Scan status
+### Unified Database (airdrop.db)
+- **wallets** - All recipient addresses with aggregated amounts
+- **transactions** - Complete transaction history from both phases
+- **scan_progress** - Blockchain scanning state and progress
 
-### Phase 2 (phase2.db)
-- `recipients_analysis` - Recipient summaries
-- `airdrop_transactions` - All node operator transactions
-- `scan_metadata` - Scan information
+### Source Databases
+- **phase1.db** - Community airdrop W0G token claims (4,542 wallets)
+- **phase2.db** - Node operator direct transfers (16,881 wallets)
 
 ## Verification
 
@@ -117,14 +159,31 @@ All data is verifiable on-chain:
 - **Network:** 0G Mainnet (Chain ID: 16661)
 - **RPC:** https://evmrpc.0g.ai
 
+## Environment Variables
+
+Create `.env` file in `backend-new` directory:
+```env
+PORT=3001
+BATCH_SIZE=10000
+POLLING_INTERVAL=18000000  # 5 hours in milliseconds
+```
+
 ## License
 
-MIT License - This data belongs to the community.
+MIT License
 
 ## Contributing
 
-This is an open transparency project. Contributions welcome to expose more fraud or improve the analysis.
+Contributions are welcome! Please feel free to submit a Pull Request. Areas for improvement:
+- Additional data visualizations
+- Performance optimizations
+- Extended blockchain analysis
+- UI/UX enhancements
+
+## Disclaimer
+
+This is an independent project providing transparency into blockchain data. All information is sourced directly from the 0G blockchain and can be independently verified through the block explorer.
 
 ---
 
-**The numbers don't lie. 0G Labs promised 2.6% at TGE and delivered only 0.659%.**
+**Data Transparency Initiative** - Providing verifiable on-chain data for the 0G community.
