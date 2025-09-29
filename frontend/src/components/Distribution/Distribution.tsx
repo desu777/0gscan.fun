@@ -1,4 +1,5 @@
 import { useStats, useScannerStatus } from '../../hooks/useStats';
+import { getRelativeTime, formatDateTime, getTimeSinceTGE } from '../../utils/timeHelpers';
 
 export default function Distribution() {
   const { stats, loading } = useStats();
@@ -17,17 +18,22 @@ export default function Distribution() {
   const PROMISED_AMOUNT = 26_000_000;
   const PROMISED_PERCENTAGE = 2.6;
   const TOTAL_SUPPLY = 1_000_000_000;
-  const TEST_WALLET_AMOUNT = 3_170_000; // Test wallet excluded
 
-  const totalDistributed = parseFloat(stats.total_w0g_distributed) / 1e18;
-  const delivered = totalDistributed - TEST_WALLET_AMOUNT; // Exclude test wallet
+  // Calculate both phases (backend already excludes test wallet)
+  const phase1Total = parseFloat(stats.total_w0g_distributed) / 1e18;
+  const phase2Total = parseFloat(stats.total_0g_distributed);
+  const delivered = phase1Total + phase2Total; // Combined Phase 1 + Phase 2
   const deliveredPercentage = (delivered / TOTAL_SUPPLY * 100).toFixed(4);
   const distributionProgress = ((delivered / PROMISED_AMOUNT) * 100).toFixed(2);
   const missing = PROMISED_AMOUNT - delivered;
 
-  // Calculate days since TGE (September 24, 2024 - exactly 5 days ago)
-  const TGE_DATE = new Date('2024-09-24');
-  const daysSinceTGE = Math.floor((Date.now() - TGE_DATE.getTime()) / (1000 * 60 * 60 * 24));
+  // Calculate time since TGE (September 22, 2025 - Phase 1 Airdrop)
+  const TGE_DATE = new Date('2025-09-22');
+  const timeSinceTGE = getTimeSinceTGE(TGE_DATE);
+  const daysSinceTGE = timeSinceTGE.days;
+
+  // Calculate time since last scan
+  const lastScanTime = stats.last_update ? getRelativeTime(stats.last_update) : 'Never';
 
   return (
     <section className="relative z-10 max-w-6xl mx-auto px-4 py-8">
@@ -62,10 +68,13 @@ export default function Distribution() {
 
         <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-lg p-6">
           <label className="text-gray-400 text-sm font-poppins block mb-2">
-            Distribution Progress
+            Distributed of Announced
           </label>
           <span className="text-2xl font-mono text-white block">
             {distributionProgress}%
+          </span>
+          <span className="text-sm text-gray-500 mt-1 block">
+            {delivered.toLocaleString(undefined, { maximumFractionDigits: 0 })} / {PROMISED_AMOUNT.toLocaleString()}
           </span>
           <div className="mt-3 h-1 bg-white/10 rounded-full overflow-hidden">
             <div
@@ -77,14 +86,14 @@ export default function Distribution() {
 
         <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-lg p-6">
           <label className="text-gray-400 text-sm font-poppins block mb-2">
-            Contract Status
+            Scanner Status
           </label>
           <div className="flex items-center gap-2">
             <span className="text-2xl font-mono text-white">Active</span>
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
           </div>
           <span className="text-sm text-gray-500 mt-1 block">
-            Day {daysSinceTGE} since TGE
+            Last scan: {lastScanTime}
           </span>
         </div>
       </div>
@@ -111,10 +120,12 @@ export default function Distribution() {
 
           <div>
             <label className="text-gray-400 text-sm font-poppins block mb-1">
-              Last Update
+              Time Since TGE
             </label>
             <span className="text-xl font-mono text-white">
-              {new Date(stats.last_update).toLocaleTimeString()}
+              {daysSinceTGE > 0 ? `${daysSinceTGE} days` :
+               daysSinceTGE === 0 ? 'Today!' :
+               `In ${Math.abs(daysSinceTGE)} days`}
             </span>
           </div>
         </div>

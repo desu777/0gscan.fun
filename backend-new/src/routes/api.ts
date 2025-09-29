@@ -103,18 +103,79 @@ router.get('/search', (req: Request, res: Response) => {
 
 router.get('/export/csv', (req: Request, res: Response) => {
   try {
+    // Simple query - no expensive JOINs
     const wallets = dbService.getWallets(100000, 0);
 
+    // Create header row with quotes
+    const headers = [
+      '"Wallet Address"',
+      '"Phase 1 (0G)"',
+      '"Phase 2 (0G)"',
+      '"Total (0G)"',
+      '"% of Total Supply"',
+      '"Transaction Count"'
+    ];
+
+    // Process and format wallet data
+    const TOTAL_SUPPLY = 1_000_000_000;
+    const rows = wallets.map(w => {
+      // Convert Phase 1 from wei to 0G
+      const phase1Amount = parseFloat(w.phase1_amount || '0') / 1e18;
+      const phase2Amount = w.phase2_amount || 0;
+      const totalAmount = phase1Amount + phase2Amount;
+      const percentOfSupply = (totalAmount / TOTAL_SUPPLY * 100).toFixed(6);
+
+      // Format numbers with thousand separators
+      const formatNumber = (num: number) => {
+        return num.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      };
+
+      return [
+        `"${w.address}"`,
+        formatNumber(phase1Amount),
+        formatNumber(phase2Amount),
+        formatNumber(totalAmount),
+        `${percentOfSupply}%`,
+        w.transaction_count
+      ].join(',');
+    });
+
+    // Add summary row at the end
+    const totalPhase1 = wallets.reduce((sum, w) =>
+      sum + parseFloat(w.phase1_amount || '0') / 1e18, 0
+    );
+    const totalPhase2 = wallets.reduce((sum, w) =>
+      sum + w.phase2_amount, 0
+    );
+    const grandTotal = totalPhase1 + totalPhase2;
+    const totalPercent = (grandTotal / TOTAL_SUPPLY * 100).toFixed(6);
+
+    const summaryRow = [
+      '"TOTAL"',
+      totalPhase1.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      totalPhase2.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      `${totalPercent}%`,
+      wallets.length
+    ].join(',');
+
+    // Combine all parts
     const csv = [
-      'Address,Phase1_W0G,Phase2_0G,Total_Transactions,Is_Suspicious,Suspicious_Reason',
-      ...wallets.map(w =>
-        `${w.address},${w.phase1_amount},${w.phase2_amount},${w.transaction_count},${w.is_suspicious},${w.suspicious_reason || ''}`
-      )
+      headers.join(','),
+      ...rows,
+      '', // Empty line before summary
+      summaryRow
     ].join('\n');
 
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename=0g_airdrop_data.csv');
-    res.send(csv);
+    // Add BOM for Excel UTF-8 compatibility
+    const BOM = '\uFEFF';
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename=0g_airdrop_distribution.csv');
+    res.send(BOM + csv);
   } catch (error) {
     console.error('Export error:', error);
     res.status(500).json({ error: 'Failed to export data' });

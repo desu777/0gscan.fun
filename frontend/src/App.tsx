@@ -4,6 +4,7 @@ import Header from './components/Header/Header';
 import Distribution from './components/Distribution/Distribution';
 import Statistics from './components/Statistics/Statistics';
 import Contracts from './components/Contracts/Contracts';
+import WalletTable from './components/WalletTable/WalletTable';
 import Footer from './components/Footer/Footer';
 import './App.css';
 
@@ -38,6 +39,7 @@ function App() {
             <Distribution />
             <Statistics />
             <Contracts />
+            <WalletTable />
           </main>
           <Footer />
         </div>

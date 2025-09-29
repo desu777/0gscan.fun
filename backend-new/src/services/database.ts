@@ -12,6 +12,8 @@ class DatabaseService {
   }
 
   getStats(): Stats {
+    // Exclude test wallet: 0x2af06cf5efc40ab7a37afad86a1ea177bbfbe42a
+    const TEST_WALLET = '0x2af06cf5efc40ab7a37afad86a1ea177bbfbe42a';
     const stats = this.db.prepare(`
       SELECT
         COUNT(DISTINCT address) as total_wallets,
@@ -21,7 +23,8 @@ class DatabaseService {
         SUM(phase2_amount) as total_0g,
         COUNT(DISTINCT CASE WHEN phase1_amount != '0' AND phase2_amount > 0 THEN address END) as overlapping_wallets
       FROM wallets
-    `).get() as any;
+      WHERE LOWER(address) != LOWER(?)
+    `).get(TEST_WALLET) as any;
 
     const progress = this.db.prepare(`
       SELECT MAX(last_block_scanned) as last_block, MAX(last_update) as last_update
@@ -41,11 +44,13 @@ class DatabaseService {
   }
 
   getWallets(limit: number = 100, offset: number = 0, search?: string): Wallet[] {
-    let query = `SELECT * FROM wallets`;
-    const params: any[] = [];
+    // Exclude test wallet: 0x2af06cf5efc40ab7a37afad86a1ea177bbfbe42a
+    const TEST_WALLET = '0x2af06cf5efc40ab7a37afad86a1ea177bbfbe42a';
+    let query = `SELECT * FROM wallets WHERE LOWER(address) != LOWER(?)`;
+    const params: any[] = [TEST_WALLET];
 
     if (search) {
-      query += ` WHERE address LIKE ?`;
+      query += ` AND address LIKE ?`;
       params.push(`%${search}%`);
     }
 
@@ -84,13 +89,15 @@ class DatabaseService {
   }
 
   getTopWallets(limit: number = 100): Wallet[] {
+    const TEST_WALLET = '0x2af06cf5efc40ab7a37afad86a1ea177bbfbe42a';
     return this.db.prepare(`
       SELECT *,
         CAST(phase1_amount as REAL) + phase2_amount as total_amount
       FROM wallets
+      WHERE LOWER(address) != LOWER(?)
       ORDER BY total_amount DESC
       LIMIT ?
-    `).all(limit) as Wallet[];
+    `).all(TEST_WALLET, limit) as Wallet[];
   }
 
   searchWallets(query: string, limit: number = 20): Wallet[] {
@@ -182,6 +189,10 @@ class DatabaseService {
     return this.db.prepare(`
       SELECT * FROM scan_progress WHERE contract_address = ?
     `).get(contractAddress.toLowerCase());
+  }
+
+  getDatabase(): Database.Database {
+    return this.db;
   }
 
   close(): void {

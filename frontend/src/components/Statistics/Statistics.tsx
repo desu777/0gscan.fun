@@ -21,8 +21,8 @@ export default function Statistics() {
     },
     {
       label: 'Phase 1 Recipients',
-      value: (stats.phase1_wallets - 1).toLocaleString(), // Excluding test wallet
-      description: 'W0G token claims (excl. test)',
+      value: stats.phase1_wallets.toLocaleString(),
+      description: 'W0G token claims',
     },
     {
       label: 'Phase 2 Recipients',
@@ -71,15 +71,31 @@ export default function Statistics() {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Recipients:</span>
-              <span className="text-white font-mono">{(stats.phase1_wallets - 1).toLocaleString()}</span>
+              <span className="text-white font-mono">{stats.phase1_wallets.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Total W0G:</span>
+              <span className="text-gray-400">Total 0G:</span>
               <span className="text-white font-mono">
-                {((parseFloat(stats.total_w0g_distributed) / 1e18) - 3170000).toLocaleString(undefined, {
+                {(parseFloat(stats.total_w0g_distributed) / 1e18).toLocaleString(undefined, {
                   maximumFractionDigits: 0
                 })}
               </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">% of Supply:</span>
+              <span className="text-white font-mono">
+                {((parseFloat(stats.total_w0g_distributed) / 1e18) / 1000000000 * 100).toFixed(4)}%
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Status:</span>
+              <div className="flex items-center gap-2">
+                <span className="text-white font-mono">Active</span>
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              </div>
+            </div>
+            <div className="text-xs text-gray-500 mt-1">
+              Contract still accepting claims, actively monitored
             </div>
           </div>
         </div>
@@ -98,10 +114,26 @@ export default function Statistics() {
             <div className="flex justify-between">
               <span className="text-gray-400">Total 0G:</span>
               <span className="text-white font-mono">
-                {(parseFloat(stats.total_0g_distributed) / 1e18).toLocaleString(undefined, {
+                {parseFloat(stats.total_0g_distributed).toLocaleString(undefined, {
                   maximumFractionDigits: 0
                 })}
               </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">% of Supply:</span>
+              <span className="text-white font-mono">
+                {(parseFloat(stats.total_0g_distributed) / 1000000000 * 100).toFixed(4)}%
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Status:</span>
+              <div className="flex items-center gap-2">
+                <span className="text-white font-mono">Finished</span>
+                <div className="w-2 h-2 bg-gray-500 rounded-full" />
+              </div>
+            </div>
+            <div className="text-xs text-gray-500 mt-1">
+              Distribution completed
             </div>
           </div>
         </div>
